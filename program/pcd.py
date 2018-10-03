@@ -61,6 +61,16 @@ def biner(img, x1, y1, x2, y2):
                 image[i, j] = 255
     return image
 
+def grayLevelSlicing(img):
+    img = rgb2Gray(img)
+    [m, n] = np.shape(img)
+    for i in range(0, m):
+        for j in range(0, n):
+            if img[i,j] >= 128 :
+                img[i,j] = 255
+            else:
+                img[i,j] = 0
+    return img
 
 
 
