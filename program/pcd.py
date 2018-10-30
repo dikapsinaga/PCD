@@ -1,5 +1,4 @@
 import numpy as np
-import math
 
 def rgb2Gray(img):
     r = img[:,:,0]
@@ -49,21 +48,28 @@ def contrastStretching(img, x1, y1, x2, y2):
     return image
 
 def biner(img, x1, y1, x2, y2):
-    image = rgb2Gray(img)
+    # image = rgb2Gray(img)
+    image = img
     [m, n] = np.shape(image)
-
 
     for i in range(0, m):
         for j in range(0, n):
             if (np.logical_and(image[i, j] > 0, image[i, j] < x1)):
                 image[i, j] = 0
             elif (np.logical_and(image[i, j] > x1, image[i, j] < y2)):
-                image[i, j] = 255
+                image[i, j] = 1
     return image
 
-
-
-
+def grayLevelSlicing(img):
+    img = rgb2Gray(img)
+    [m, n] = np.shape(img)
+    for i in range(0, m):
+        for j in range(0, n):
+            if img[i,j] >= 128 :
+                img[i,j] = 255
+            else:
+                img[i,j] = 0
+    return img
 
 def substraction(img1, img2):
     new = np.subtract(img1, img2)
@@ -97,5 +103,71 @@ def bitPlaneSlicing(img, plane):
                 new[i, j] = 0
             else:
                 new[i, j] = 255
+    return new;
+
+def dilation (img):
+    [m, n] = np.shape(img)
+    new = np.zeros((m,n))
+
+    temp = np.zeros((m+2, n+2))
+    temp[1:-1, 1:-1] = img
+
+    [a, b] = np.shape(temp)
+
+    temp[1:-1, 0] = img[:, 0]
+    temp[0, 1:-1] = img[0, :]
+    temp[1:-1, b-1] = img[:, n-1]
+    temp[a-1, 1:-1] = img[m-1, :]
+
+    print(np.shape(img))
+    print(np.shape(temp))
+    print(m,n )
+    count = 0
+    for i in range(1, a-2):
+        for j in range(1, b-2):
+            new[i,j] = hit(temp[i:i+3, j:j+3])
+            count+=1
+            print(i,j)
+            # break
+
+            # new[i, j] = hit(img[i, j], img[i - 1, j], img[i, j + 1], img[i + 1, j], img[i, j - 1])
+    print(count)
+    # print(np.shape(new))
+    return new;
+
+
+def erotion (img):
+    [m, n] = np.shape(img)
+    new = np.zeros((m, n))
+
+    temp = np.zeros((m + 2, n + 2))
+    temp[1:-1, 1:-1] = img
+
+    [a, b] = np.shape(temp)
+
+    temp[1:-1, 0] = img[:, 0]
+    temp[0, 1:-1] = img[0, :]
+    temp[1:-1, b - 1] = img[:, n - 1]
+    temp[a - 1, 1:-1] = img[m - 1, :]
+
+    for i in range(1, m - 1):
+        for j in range(1, n - 1):
+            new[i, j] = fit(temp[i, j], temp[i - 1, j], temp[i, j + 1], temp[i + 1, j], temp[i, j - 1])
 
     return new;
+
+def hit (img):
+    print(img)
+
+    # if ( (num + a + b + c + d) > 0 ):
+    #     num = 1
+    # else:
+    #     num= 0
+    # return num;
+
+def fit (num, a, b, c, d):
+    if ( (num + a + b + c + d) == 5 ):
+        num = 1
+    else:
+        num = 0
+    return num;
