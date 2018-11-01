@@ -1,25 +1,23 @@
 import matplotlib.pyplot as plt
 import program.pcd as pcd
 import numpy as np
+import PIL
 
-img = plt.imread('../image/phone.png')
+# img = plt.imread('../image/koin.png')
+img = PIL.Image.open('../image/leaf2.jpg')
 
-newImg = pcd.rgb2Gray(img)
+arr = np.array(img)
+newImg = pcd.rgb2Gray(arr)
 
-newImg = pcd.biner(newImg, 90, 0, 90, 255)
-# print(newImg)
+# newImg = pcd.logTransformations(newImg, 1.3)
+newImg = pcd.biner(newImg, 127, 0, 127, 255)
 
-temp = pcd.dilation(newImg, 3)
+
+# temp = pcd.dilation(newImg, 3)
 # temp = pcd.dilation(temp, 1)
 # temp = pcd.dilation(temp, 1)
+temp = pcd.erotion(newImg, 3)
 temp = pcd.erotion(temp, 3)
-# temp = pcd.erotion(temp, 1)
-
-# disk = pcd.disk(1)
-# print(np.shape(disk))
-
-
-# print(temp)
 
 
 f = plt.figure()

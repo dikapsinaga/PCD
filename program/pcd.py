@@ -5,7 +5,7 @@ def rgb2Gray(img):
     g = img[:,:,1]
     b = img[:,:,2]
     gray = 0.21 * r + 0.71 * g + 0.07 *b
-    return np.uint8(gray*255);
+    return np.uint8(gray);
 
 def negative(img):
     L = np.max(img)
@@ -54,9 +54,9 @@ def biner(img, x1, y1, x2, y2):
     for i in range(0, m):
         for j in range(0, n):
             if (np.logical_and(image[i, j] > 0, image[i, j] < x1)):
-                image[i, j] = 1
-            elif (np.logical_and(image[i, j] > x1, image[i, j] < y2)):
                 image[i, j] = 0
+            elif (np.logical_and(image[i, j] > x1, image[i, j] < y2)):
+                image[i, j] = 255
     return image
 
 def grayLevelSlicing(img):
@@ -110,18 +110,18 @@ def dilation (img, num):
     [m, n] = np.shape(img)
     new = np.zeros((m,n))
 
-    temp = np.zeros((m+2, n+2))
-    temp[1:-1, 1:-1] = img
+    temp = np.zeros((m+(num*2), n+(num*2)))
+    temp[num:-num, num:-num] = img
 
     [a, b] = np.shape(temp)
 
-    temp[1:-1, 0] = img[:, 0]
-    temp[0, 1:-1] = img[0, :]
-    temp[1:-1, b-1] = img[:, n-1]
-    temp[a-1, 1:-1] = img[m-1, :]
+    temp[num:-num, 0:num-1] = img[:, 0:num-1]
+    temp[0:num-1, num:-num] = img[0:num-1, :]
+    temp[num:-num, b-num] = img[:, n-1]
+    temp[a-num, num:-num] = img[m-1, :]
 
-    for i in range(1, a-2):
-        for j in range(1, b-2):
+    for i in range(0, m):
+        for j in range(0, n):
             new[i,j] = hit(temp[i:i+disk, j:j+disk], num)
     return new;
 
@@ -132,54 +132,49 @@ def erotion (img, num):
     [m, n] = np.shape(img)
     new = np.zeros((m, n))
 
-    temp = np.zeros((m + 2, n + 2))
-    temp[1:-1, 1:-1] = img
+    temp = np.zeros((m + (num * 2), n + (num * 2)))
+    temp[num:-num, num:-num] = img
 
     [a, b] = np.shape(temp)
 
-    temp[1:-1, 0] = img[:, 0]
-    temp[0, 1:-1] = img[0, :]
-    temp[1:-1, b - 1] = img[:, n - 1]
-    temp[a - 1, 1:-1] = img[m - 1, :]
+    temp[num:-num, 0:num - 1] = img[:, 0:num - 1]
+    temp[0:num - 1, num:-num] = img[0:num - 1, :]
+    temp[num:-num, b - num] = img[:, n - 1]
+    temp[a - num, num:-num] = img[m - 1, :]
 
-    for i in range(1, a - 2):
-        for j in range(1, b - 2):
+    for i in range(0, m):
+        for j in range(0, n):
             new[i, j] = fit(temp[i:i + disk, j:j + disk], num)
-        # break
     return new;
 
 def hit (img, num):
     kernel = se(num)
-    [m, n] = np.shape(img)
     out = 0
 
-    for i in range(m):
-        for j in range(n):
-            if(kernel[i, j] == 1):
-                if(kernel[i, j] == img[i, j]):
-                    out = 1
-
+    temp = kernel + img
+    if (np.max(temp) == 510):
+        out = 255
     return out
 
 def fit (img, num):
     kernel = se(num)
-    [m, n] = np.shape(img)
     out = 0
-    count = 0
 
-    for i in range(m):
-        for j in range(n):
-            if (kernel[i, j] == 1):
-                if (kernel[i, j] == img[i, j]):
-                    count+=1
+    temp = kernel + img
+    if (np.min(temp) == 255):
+        out = 255
+    return out
 
-    if(np.sum(kernel) == count):
-        out = 1
-
-    return out;
-
-def se(radius, dtype=np.uint8):
+def se(radius):
     L = np.arange(-radius, radius + 1)
     X, Y = np.meshgrid(L, L)
 
-    return np.array((X ** 2 + Y ** 2) <= radius ** 2, dtype=dtype)
+    [m, n] = np.shape(X)
+    new = np.zeros((m, n))
+
+    for i in range (0, m):
+        for j in range (0, n):
+            if((X[i, j] ** 2 + Y[i, j] ** 2) <= radius ** 2):
+                new[i, j] = 255
+
+    return new
